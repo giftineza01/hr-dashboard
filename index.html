@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Insight Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --purple:#6c5ce7;
+  --purple-hover:#5a4bcf;
+  --bg:#f7f8fc;
+  --text:#2d3436;
+  --muted:#a4b0be;
+  --white:#fff;
+  --orange:#fdcb6e;
+  --green:#00b894;
+  --red:#ff7675;
+  --border:#eceef3;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{background:var(--bg);display:flex;min-height:100vh;color:var(--text);}
+
+/* SIDEBAR */
+.sidebar{
+  width:250px;background:var(--white);padding:24px 16px;
+  display:flex;flex-direction:column;border-right:1px solid var(--border);
+  position:fixed;height:100vh;overflow-y:auto;
+}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 8px;}
+.logo-icon{
+  background:var(--purple);color:#fff;width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;
+}
+.logo-text{font-weight:700;font-size:0.95rem;line-height:1.3;}
+.logo-text small{display:block;font-size:0.65rem;color:var(--muted);font-weight:400;}
+
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;
+  color:var(--muted);text-decoration:none;border-radius:8px;
+  font-size:0.85rem;font-weight:500;transition:0.2s;
+}
+.nav-item:hover{background:#f1f2f6;color:var(--text);}
+.nav-item.active{background:var(--purple);color:#fff;}
+.nav-item i{width:18px;text-align:center;font-size:0.9rem;}
+
+.sidebar-footer{margin-top:16px;display:flex;flex-direction:column;gap:2px;padding-top:16px;border-top:1px solid var(--border);}
+
+/* MAIN */
+.main{margin-left:250px;padding:24px 32px;width:calc(100% - 250px);}
+
+/* TOP BAR */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px;
+}
+.breadcrumb{font-size:0.8rem;color:var(--muted);font-weight:500;}
+.breadcrumb b{color:var(--text);font-weight:600;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+
+.btn{
+  padding:9px 16px;border-radius:8px;border:none;cursor:pointer;
+  font-weight:600;font-size:0.8rem;display:inline-flex;align-items:center;gap:6px;
+  transition:0.2s;font-family:inherit;
+}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:var(--purple-hover);}
+.btn-ghost{background:transparent;color:var(--text);}
+.btn-ghost:hover{background:#f1f2f6;}
+.btn-outline{background:#fff;border:1px solid var(--border);color:var(--text);}
+.btn-outline:hover{background:#f8f9fb;}
+
+/* PAGE TITLE */
+.pagehead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.pagehead h1{font-size:1.45rem;font-weight:700;margin-bottom:4px;}
+.pagehead p{color:var(--muted);font-size:0.82rem;}
+.pagehead-actions{display:flex;gap:10px;}
+
+/* STAT CARDS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.stat{
+  background:#fff;padding:18px 20px;border-radius:12px;
+  border:1px solid var(--border);
+}
+.stat-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.stat-title{display:flex;align-items:center;gap:8px;font-size:0.82rem;font-weight:600;color:var(--text);}
+.stat-title i{color:var(--muted);font-size:0.85rem;}
+.stat-menu{color:var(--muted);cursor:pointer;font-size:0.9rem;}
+.stat-row{display:flex;align-items:baseline;gap:10px;}
+.stat-num{font-size:1.65rem;font-weight:700;}
+.stat-trend{font-size:0.7rem;color:var(--green);font-weight:600;}
+
+/* MIDDLE GRID */
+.mid-grid{display:grid;grid-template-columns:1.85fr 1fr;gap:16px;margin-bottom:20px;}
+.card{
+  background:#fff;padding:20px;border-radius:12px;border:1px solid var(--border);
+}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.card-head h3{font-size:0.95rem;font-weight:600;}
+.card-head .dots{color:var(--muted);cursor:pointer;}
+
+.toggle{
+  display:flex;gap:6px;font-size:0.75rem;
+}
+.toggle span{
+  padding:5px 10px;border-radius:6px;cursor:pointer;color:var(--muted);
+}
+.toggle span.active{background:#f1f2f6;color:var(--text);font-weight:600;}
+
+.legend-row{display:flex;gap:18px;font-size:0.75rem;color:var(--text);margin-bottom:10px;}
+.legend-row span{display:flex;align-items:center;gap:6px;}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* HEATMAP */
+.heatmap-container{display:flex;gap:8px;}
+.heatmap-y{display:flex;flex-direction:column;justify-content:space-between;font-size:0.68rem;color:var(--muted);padding:24px 0 0 0;text-align:right;width:36px;}
+.heatmap-main{flex:1;}
+.heatmap-x{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:0.68rem;color:var(--muted);text-align:center;margin-bottom:6px;}
+.heatmap-cells{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(6,1fr);gap:6px;height:170px;}
+.cell{border-radius:6px;background:#f1f2f6;}
+.cell.l1{background:#e0defa;}
+.cell.l2{background:#c2bef5;}
+.cell.l3{background:#9d96f0;}
+.cell.l4{background:var(--purple);}
+
+/* BOTTOM GRID */
+.bottom-grid{display:grid;grid-template-columns:1.85fr 1fr;gap:16px;}
+
+table{width:100%;border-collapse:collapse;font-size:0.78rem;}
+th{text-align:left;color:var(--muted);font-weight:500;padding:10px 8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:13px 8px;border-bottom:1px solid #f7f8fc;font-weight:500;white-space:nowrap;}
+.status-active{color:var(--green);font-weight:600;}
+
+/* GAUGE */
+.gauge-wrap{position:relative;width:100%;height:130px;overflow:hidden;margin-top:8px;}
+.gauge-text{position:absolute;bottom:0;width:100%;text-align:center;}
+.gauge-text h2{font-size:1.9rem;font-weight:700;line-height:1.1;}
+.gauge-text span{font-size:0.72rem;color:var(--muted);font-weight:500;}
+
+.jobs-legend{margin-top:18px;display:flex;flex-direction:column;gap:11px;}
+.jobs-legend .row{display:flex;justify-content:space-between;font-size:0.8rem;font-weight:500;}
+.jobs-legend .label{display:flex;align-items:center;gap:8px;color:var(--muted);}
+.jobs-legend .val{color:var(--text);font-weight:600;}
+
+/* Responsive */
+@media(max-width:1200px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .mid-grid,.bottom-grid{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .main{margin-left:0;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
+    <div class="logo-text">Nonsense Studio<small>hello@nonsense.studio</small></div>
+  </div>
+
+  <nav class="nav">
+    <a href="#" class="nav-item active"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-user-group"></i> Employee Directory</a>
+    <a href="#" class="nav-item"><i class="fa-regular fa-clock"></i> Attendance</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-chart-line"></i> Employee Performance</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-umbrella-beach"></i> Leave Management</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-money-bill-wave"></i> Payroll</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-bullhorn"></i> Recruitment</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-user-plus"></i> Onboarding</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-code"></i> Development</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="#" class="nav-item"><i class="fa-regular fa-circle-question"></i> Help Center</a>
+    <a href="#" class="nav-item"><i class="fa-solid fa-gear"></i> Settings</a>
+    <a href="#" class="nav-item" style="color:var(--red);"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="breadcrumb">Dashboard / <b>Overview</b></div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost"><i class="fa-solid fa-plus"></i> Invite People</button>
+      <button class="btn btn-purple">Generate Plan</button>
+    </div>
+  </div>
+
+  <!-- PAGE HEAD -->
+  <div class="pagehead">
+    <div>
+      <h1>HR Insight Dashboard</h1>
+      <p>Smart HR insights that drive better decisions</p>
+    </div>
+    <div class="pagehead-actions">
+      <button class="btn btn-outline"><i class="fa-solid fa-arrow-up-from-bracket"></i> Export Data</button>
+      <button class="btn btn-purple"><i class="fa-solid fa-plus"></i> New Entry</button>
+    </div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-head">
+        <div class="stat-title"><i class="fa-solid fa-user-group"></i> Total Employee</div>
+        <i class="fa-solid fa-ellipsis stat-menu"></i>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">272</div>
+        <div class="stat-trend">+6% last month</div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-head">
+        <div class="stat-title"><i class="fa-solid fa-user-plus"></i> New Employee</div>
+        <i class="fa-solid fa-ellipsis stat-menu"></i>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">72</div>
+        <div class="stat-trend">+4% last month</div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-head">
+        <div class="stat-title"><i class="fa-solid fa-user-minus"></i> Resign Employee</div>
+        <i class="fa-solid fa-ellipsis stat-menu"></i>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">16</div>
+        <div class="stat-trend">+2% last month</div>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-head">
+        <div class="stat-title"><i class="fa-solid fa-briefcase"></i> Job Applicants</div>
+        <i class="fa-solid fa-ellipsis stat-menu"></i>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">329</div>
+        <div class="stat-trend">+8% last month</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MIDDLE: CHARTS -->
+  <section class="mid-grid">
+    <!-- Team Performance -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Team Performance</h3>
+        <div class="toggle">
+          <span>Monthly</span>
+          <span class="active">Yearly</span>
+        </div>
+      </div>
+      <div class="legend-row">
+        <span><span class="dot" style="background:var(--purple);"></span> Project Team</span>
+        <span><span class="dot" style="background:var(--orange);"></span> Product Team</span>
+      </div>
+      <div style="height:200px;position:relative;">
+        <canvas id="perfChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Attendance -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Attendance Report</h3>
+        <i class="fa-solid fa-ellipsis dots"></i>
+      </div>
+      <div class="heatmap-container">
+        <div class="heatmap-y">
+          <div>11:00</div><div>10:30</div><div>10:00</div><div>09:30</div><div>09:00</div><div>08:30</div>
+        </div>
+        <div class="heatmap-main">
+          <div class="heatmap-x">
+            <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div>
+          </div>
+          <div class="heatmap-cells">
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+            <div class="cell"></div><div class="cell l1"></div><div class="cell l1"></div><div class="cell l1"></div><div class="cell"></div>
+            <div class="cell l1"></div><div class="cell l2"></div><div class="cell l2"></div><div class="cell l1"></div><div class="cell l1"></div>
+            <div class="cell l2"></div><div class="cell l3"></div><div class="cell l3"></div><div class="cell l2"></div><div class="cell l2"></div>
+            <div class="cell l4"></div><div class="cell l4"></div><div class="cell l4"></div><div class="cell l4"></div><div class="cell l3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOTTOM: TABLE + GAUGE -->
+  <section class="bottom-grid">
+    <!-- Employees -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Employees</h3>
+        <i class="fa-solid fa-ellipsis dots"></i>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Department</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>#FR01890</td><td>Cooper Herwitz</td><td>cooper@mail.com</td><td>Jr. Developer</td><td>IT</td><td class="status-active">Active</td></tr>
+            <tr><td>#FR01728</td><td>Kierra Gouse</td><td>kierra@mail.com</td><td>UI Designer</td><td>Creative</td><td class="status-active">Active</td></tr>
+            <tr><td>#FR01653</td><td>Cheyenne Franci</td><td>cheyenne@mail.com</td><td>Development</td><td>HR</td><td class="status-active">Active</td></tr>
+            <tr><td>#FR01832</td><td>Charlie Saris</td><td>charlie@mail.com</td><td>Media Social</td><td>Marketing</td><td class="status-active">Active</td></tr>
+            <tr><td>#FR01728</td><td>Lindsey Mango</td><td>lindsey@mail.com</td><td>Product Designer</td><td>Creative</td><td class="status-active">Active</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Jobs Overview -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Jobs Overview</h3>
+        <i class="fa-solid fa-ellipsis dots"></i>
+      </div>
+      <div class="gauge-wrap">
+        <canvas id="jobsChart" width="300" height="150"></canvas>
+        <div class="gauge-text">
+          <h2>72</h2>
+          <span>Total Jobs</span>
+        </div>
+      </div>
+      <div class="jobs-legend">
+        <div class="row">
+          <span class="label"><span class="dot" style="background:var(--purple);"></span> Active Jobs</span>
+          <span class="val">46</span>
+        </div>
+        <div class="row">
+          <span class="label"><span class="dot" style="background:var(--orange);"></span> In Review Jobs</span>
+          <span class="val">18</span>
+        </div>
+        <div class="row">
+          <span class="label"><span class="dot" style="background:var(--green);"></span> Finish Jobs</span>
+          <span class="val">8</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ---- LINE CHART ---- */
+const perfCtx = document.getElementById('perfChart').getContext('2d');
+const g1 = perfCtx.createLinearGradient(0,0,0,200);
+g1.addColorStop(0,'rgba(108,92,231,0.18)');
+g1.addColorStop(1,'rgba(108,92,231,0)');
+const g2 = perfCtx.createLinearGradient(0,0,0,200);
+g2.addColorStop(0,'rgba(253,203,110,0.18)');
+g2.addColorStop(1,'rgba(253,203,110,0)');
+
+new Chart(perfCtx,{
+  type:'line',
+  data:{
+    labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets:[
+      {label:'Project Team',data:[15,25,20,30,25,28,25,32,35,38,42,45],borderColor:'#6c5ce7',backgroundColor:g1,tension:0.4,fill:true,pointRadius:0,pointHoverRadius:5,borderWidth:2},
+      {label:'Product Team',data:[10,15,12,18,15,22,18,25,22,28,25,30],borderColor:'#fdcb6e',backgroundColor:g2,tension:0.4,fill:true,pointRadius:0,pointHoverRadius:5,borderWidth:2}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      y:{beginAtZero:true,grid:{color:'#f1f2f6',drawBorder:false},ticks:{callback:v=>v+'K',font:{size:10},color:'#a4b0be'}},
+      x:{grid:{display:false},ticks:{font:{size:10},color:'#a4b0be'}}
+    }
+  }
+});
+
+/* ---- SEMI-CIRCLE GAUGE ---- */
+const jobsCtx = document.getElementById('jobsChart').getContext('2d');
+new Chart(jobsCtx,{
+  type:'doughnut',
+  data:{
+    labels:['Active','In Review','Finished'],
+    datasets:[{
+      data:[46,18,8],
+      backgroundColor:['#6c5ce7','#fdcb6e','#00b894'],
+      borderWidth:0,
+      cutout:'78%',
+      circumference:180,
+      rotation:270
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{enabled:false}}
+  }
+});
+</script>
+</body>
+</html>
